@@ -213,7 +213,7 @@
     let SECTION_QUESTIONS = [];
 
     async function loadData() {
-      setStatus('Đang tải dữ liệu từ Apps Script…', 'loading');
+      setStatus('Đang tải dữ liệu', 'loading');
       try {
         const res = await fetch(CONFIG.API_URL, { cache: 'no-store' });
         if (!res.ok) throw new Error('Không truy cập được API. Kiểm tra URL Web App và quyền triển khai.');
