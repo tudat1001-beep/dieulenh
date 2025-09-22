@@ -476,13 +476,24 @@
     </section>
 
     <main id="questions" class="mb-6"></main>
-
+<div class="flex justify-between items-center mb-4">
+        <button onclick="navigateToPreviousSection()" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium flex items-center gap-2 transition-all hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" id="btn-prev">
+          <i class="fas fa-chevron-left"></i>
+          Phần trước
+        </button>
+        
+        <div id="section-info" class="font-semibold text-gray-800 mx-2 text-center"></div>
+        
+        <button onclick="navigateToNextSection()" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium flex items-center gap-2 transition-all hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" id="btn-next">
+          Phần sau
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     <footer class="text-center text-xs text-gray-500 mt-6 pt-4 border-t border-gray-200 mobile-text-center">
       <p>Ứng dụng ôn luyện - Chọn đáp án để xem kết quả ngay lập tức</p>
       <p class="mt-2"></p>
     </footer>
   </div>
-
   <script>
     // Cập nhật trạng thái nút điều hướng
     function updateNavigationButtons() {
