@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trắc nghiệm — 20 câu ngẫu nhiên & chấm điểm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .question-card {
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+    
+    .question-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .option-label {
+      transition: all 0.2s ease;
+    }
+    
+    .option-label:hover {
+      background-color: #f8fafc;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #10b981;
+      transition: width 0.5s ease;
+    }
+    
+    .score-display {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 640px) {
+      .mobile-padding {
+        padding: 1rem;
+      }
+      
+      .mobile-sticky-footer {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 1rem;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+      }
+      
+      .mobile-flex-col {
+        flex-direction: column;
+      }
+      
+      .mobile-text-center {
+        text-align: center;
+      }
+      
+      .mobile-full-width {
+        width: 100%;
+      }
+      
+      .question-card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .option-label {
+        padding: 0.75rem;
+      }
+    }
+    
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+  <script>
+    // ====== CẤU HÌNH ======
+    const CONFIG = {
+      // Đặt URL Web App của Apps Script sau khi triển khai (doGet trả JSON)
+      API_URL: 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgrodM46l_uOAZqVHZeqgaTRkzoUYleBw_JyYdjR6HeRNMn3VEPgSULB75ZC0aqHHTeszDoV5KiE8oADb0Z6dqpXoXPy_HMAWgmKku0WAdBB6GxxHBoYoI4cj4bG6sz6Ll3_xmLPhj7mHudY8D151TAxgg5gz-0g4lgrZqgzewM58q-0_O31OsiC82W4MAaEGweqvQ8rl54aSC3GwdpDIHUvJCfLUTofC-LpfkVZWM8IzBTDW-Be0BOfVIG3i0B3y3OOhqe2ULznWi41P_hvlAEG9T9cxRlR2rC8B42&lib=Mw0eLkIm6DcV6jI3Xq4qdLdG2gI_JdtU5',
+      NUM_QUESTIONS: 20,
+    };
+
+    // ====== TIỆN ÍCH ======
+    const sleep = (ms)=> new Promise(r=>setTimeout(r, ms));
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    function normalize(str){
+      return (str||'').toString().trim();
+    }
+    function escapeHtml(str){
+      return (str||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+
+    // ====== TRẠNG THÁI ỨNG DỤNG ======
+    let ALL_QUESTIONS = [];
+    let CURRENT_SET = [];
+    let answeredCount = 0;
+
+    async function loadData(){
+      setStatus('Đang tải dữ liệu từ Apps Script…', 'loading');
+      try{
+        const res = await fetch(CONFIG.API_URL, { cache: 'no-store' });
+        if(!res.ok) throw new Error('Không truy cập được API. Kiểm tra URL Web App và quyền triển khai.');
+        const json = await res.json();
+        if(json.status !== 'ok' || !Array.isArray(json.data)) throw new Error('Phản hồi không hợp lệ.');
+        // Chuẩn hoá sang cấu trúc sử dụng trong UI
+        ALL_QUESTIONS = json.data.map((r,i)=>{
+          const options = [];
+          if (normalize(r.A)) options.push({key:'A', text: normalize(r.A)});
+          if (normalize(r.B)) options.push({key:'B', text: normalize(r.B)});
+          if (normalize(r.C)) options.push({key:'C', text: normalize(r.C)});
+          if (normalize(r.D)) options.push({key:'D', text: normalize(r.D)});
+          return {
+            id: normalize(r["Số câu"]) || String(i+1),
+            question: normalize(r["Câu hỏi"]) || '',
+            options,
+            answer: normalize(r["Đáp án (chữ)"]).toUpperCase()
+          };
+        }).filter(q => q.question && q.options.length);
+
+        setStatus(`Đã nạp ${ALL_QUESTIONS.length} câu hỏi. Bấm "Tạo đề 20 câu" để bắt đầu.`, 'success');
+        document.getElementById('btn-generate').disabled = false;
+        document.getElementById('btn-generate').classList.remove('opacity-50');
+      }catch(err){
+        console.error(err);
+        setStatus('Lỗi: ' + err.message, 'error');
+      }
+    }
+
+    function setStatus(msg, type = 'info'){
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = msg;
+      
+      // Xóa lớp cũ
+      statusEl.className = 'mb-3 text-sm transition-all duration-300';
+      
+      // Thêm lớp mới dựa trên loại thông báo
+      if (type === 'loading') {
+        statusEl.classList.add('text-blue-600');
+      } else if (type === 'success') {
+        statusEl.classList.add('text-green-600');
+      } else if (type === 'error') {
+        statusEl.classList.add('text-red-600', 'font-medium');
+      } else {
+        statusEl.classList.add('text-gray-700');
+      }
+    }
+
+    function generateRandomSet(){
+      if (ALL_QUESTIONS.length < CONFIG.NUM_QUESTIONS) {
+        alert(`Số câu trong ngân hàng (${ALL_QUESTIONS.length}) ít hơn ${CONFIG.NUM_QUESTIONS}.`);
+        return;
+      }
+      const pool = shuffle([...ALL_QUESTIONS]);
+      CURRENT_SET = pool.slice(0, CONFIG.NUM_QUESTIONS);
+      answeredCount = 0;
+      updateProgressBar();
+      renderQuestions(CURRENT_SET);
+      setStatus(`Đã tạo ${CONFIG.NUM_QUESTIONS} câu. Trả lời rồi bấm Chấm điểm.`, 'success');
+      document.getElementById('result').innerHTML = '';
+      
+      // Hiển thị nút chấm điểm cố định ở dưới cùng
+      document.getElementById('grading-section').classList.remove('hidden');
+      
+      // Cuộn đến phần câu hỏi
+      document.getElementById('questions').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateProgressBar() {
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const percentage = Math.round((answeredCount / CURRENT_SET.length) * 100);
+      
+      progressFill.style.width = `${percentage}%`;
+      progressText.textContent = `Đã trả lời: ${answeredCount}/${CURRENT_SET.length} (${percentage}%)`;
+    }
+
+    function handleAnswerSelection() {
+      answeredCount = document.querySelectorAll('input[type="radio"]:checked').length;
+      updateProgressBar();
+    }
+
+    function renderQuestions(list){
+      const container = document.getElementById('questions');
+      container.innerHTML = '';
+      list.forEach((q, idx) => {
+        const qId = `q_${idx}`;
+        const block = document.createElement('div');
+        block.className = 'question-card mb-6 p-6 rounded-xl shadow-sm bg-white fade-in';
+        block.innerHTML = `
+          <div class="flex items-start gap-3 mb-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center font-semibold">${idx+1}</div>
+            <div class="font-medium text-gray-800">${escapeHtml(q.question)}</div>
+          </div>
+          <div class="space-y-3 ml-11">
+            ${q.options.map(opt => `
+              <label class="option-label flex items-start gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer">
+                <input type="radio" name="${qId}" value="${opt.key}" class="mt-1 hidden">
+                <div class="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center radio-indicator">
+                  <div class="w-3 h-3 rounded-full bg-white"></div>
+                </div>
+                <span class="flex-1"><span class="font-semibold mr-2">${opt.key}.</span> <span>${escapeHtml(opt.text)}</span></span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(block);
+        
+        // Thêm sự kiện cho các input radio
+        const radioInputs = block.querySelectorAll('input[type="radio"]');
+        radioInputs.forEach(input => {
+          input.addEventListener('change', handleAnswerSelection);
+        });
+      });
+      
+      // Thêm hiệu ứng cho radio buttons tùy chỉnh
+      document.querySelectorAll('.option-label').forEach(label => {
+        label.addEventListener('click', function() {
+          const radio = this.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.checked = true;
+            
+            // Cập nhật giao diện radio tùy chỉnh
+            document.querySelectorAll(`input[name="${radio.name}"]`).forEach(r => {
+              const parentLabel = r.closest('.option-label');
+              const indicator = parentLabel.querySelector('.radio-indicator');
+              indicator.classList.remove('border-primary-500', 'bg-primary-50');
+              indicator.querySelector('div').classList.remove('bg-primary-500');
+            });
+            
+            const currentIndicator = this.querySelector('.radio-indicator');
+            currentIndicator.classList.add('border-primary-500', 'bg-primary-50');
+            currentIndicator.querySelector('div').classList.add('bg-primary-500');
+            
+            handleAnswerSelection();
+          }
+        });
+      });
+    }
+
+    function grade(){
+      if (!CURRENT_SET.length) {
+        setStatus('Vui lòng tạo đề trước khi chấm điểm.', 'error');
+        return;
+      }
+      
+      let correct = 0;
+      const container = document.getElementById('questions');
+      const blocks = [...container.children];
+      const wrongList = [];
+
+      blocks.forEach((block, idx) => {
+        const q = CURRENT_SET[idx];
+        const name = `q_${idx}`;
+        const chosen = (document.querySelector(`input[name="${name}"]:checked`)||{}).value;
+        const labels = [...block.querySelectorAll('.option-label')];
+
+        labels.forEach(l => {
+          l.classList.remove('bg-red-50', 'border-red-300', 'bg-green-50', 'border-green-300');
+          l.querySelector('span span:last-child').classList.remove('font-bold', 'text-red-700', 'text-green-700');
+          l.querySelector('.radio-indicator').classList.remove('border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50');
+          l.querySelector('.radio-indicator div').classList.remove('bg-red-500', 'bg-green-500');
+        });
+
+        const correctLabel = labels.find(l => l.querySelector('input').value === q.answer);
+        if (correctLabel) {
+          correctLabel.classList.add('bg-green-50', 'border-green-300');
+          const textSpan = correctLabel.querySelector('span span:last-child');
+          if (textSpan) textSpan.classList.add('font-bold', 'text-green-700');
+          correctLabel.querySelector('.radio-indicator').classList.add('border-green-500', 'bg-green-50');
+          correctLabel.querySelector('.radio-indicator div').classList.add('bg-green-500');
+        }
+
+        if (chosen === q.answer) {
+          correct++;
+        } else {
+          if (chosen) {
+            const chosenLabel = labels.find(l => l.querySelector('input').value === chosen);
+            if (chosenLabel) {
+              chosenLabel.classList.add('bg-red-50', 'border-red-300');
+              chosenLabel.querySelector('span span:last-child').classList.add('font-bold', 'text-red-700');
+              chosenLabel.querySelector('.radio-indicator').classList.add('border-red-500', 'bg-red-50');
+              chosenLabel.querySelector('.radio-indicator div').classList.add('bg-red-500');
+            }
+          }
+          wrongList.push({ idx: idx+1, correct: q.answer, chosen: chosen||'-' });
+        }
+      });
+
+      const score = Math.round((correct / CURRENT_SET.length) * 100);
+      const resultEl = document.getElementById('result');
+      
+      let resultHTML = `
+        <div class="score-display fade-in">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-2xl font-bold">Kết quả</div>
+            <div class="text-4xl font-bold">${score}<span class="text-xl">/100</span></div>
+          </div>
+          <div class="text-lg mb-2">${correct}/${CURRENT_SET.length} câu đúng</div>
+          <div class="progress-bar mt-4">
+            <div class="progress-fill" style="width: ${score}%"></div>
+          </div>
+      `;
+      
+      if (wrongList.length) {
+        resultHTML += `
+          <div class="mt-4 text-white">
+            <div class="font-medium mb-2">Các câu sai:</div>
+            <div class="text-sm bg-white/20 p-3 rounded-lg">
+              ${wrongList.map(w => `Câu ${w.idx} (đúng: <b>${w.correct}</b>${w.chosen && w.chosen!=='-'?`, bạn chọn: <b>${w.chosen}</b>`:''})`).join('; ')}
+            </div>
+          </div>
+        `;
+      } else {
+        resultHTML += `
+          <div class="mt-4 text-white text-center pulse-animation">
+            <i class="fas fa-trophy text-3xl mb-2"></i>
+            <div class="font-bold">Xuất sắc! Bạn đúng toàn bộ.</div>
+          </div>
+        `;
+      }
+      
+      resultHTML += `</div>`;
+      resultEl.innerHTML = resultHTML;
+      resultEl.scrollIntoView({ behavior:'smooth', block:'center' });
+      
+      // Ẩn nút chấm điểm cố định sau khi chấm điểm
+      document.getElementById('grading-section').classList.add('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="max-w-4xl mx-auto mobile-padding">
+    <header class="text-center mb-6 mobile-mb-4">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Trắc nghiệm 20 câu</h1>
+      <p class="text-sm md:text-base text-gray-600">Nguồn: Apps Script - Tạo đề ngẫu nhiên và chấm điểm tự động</p>
+    </header>
+
+    <section class="mb-6 bg-white rounded-2xl shadow-sm p-4 md:p-6">
+      <div class="flex flex-wrap gap-3 justify-center mobile-flex-col">
+        <button id="btn-generate" onclick="generateRandomSet()" class="px-5 py-3 rounded-xl bg-primary-600 text-white font-medium flex items-center justify-center gap-2 transition-all hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed opacity-50 mobile-full-width" disabled>
+          <i class="fas fa-plus-circle"></i>
+          Tạo đề 20 câu
+        </button>
+      </div>
+      
+      <div class="mt-4">
+        <div id="status" class="mb-3 text-sm text-gray-700">Chuẩn bị nạp dữ liệu…</div>
+        <div id="progress-container" class="mt-4 hidden">
+          <div class="flex justify-between text-sm text-gray-600 mb-1">
+            <span id="progress-text">Đã trả lời: 0/0 (0%)</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main id="questions" class="mb-6"></main>
+
+    <!-- Khu vực chấm điểm cố định ở dưới cùng -->
+    <div id="grading-section" class="hidden mobile-sticky-footer">
+      <div class="max-w-4xl mx-auto">
+        <button onclick="grade()" class="w-full py-4 rounded-xl bg-emerald-600 text-white font-bold text-lg flex items-center justify-center gap-2 transition-all hover:bg-emerald-700">
+          <i class="fas fa-check-circle"></i>
+          Chấm điểm ngay
+        </button>
+      </div>
+    </div>
+
+    <div id="result" class="mb-6"></div>
+
+    <footer class="text-center text-xs text-gray-500 mt-6 pt-4 border-t border-gray-200 mobile-text-center">
+      <p>Triển khai Apps Script ở chế độ "Anyone" & "Execute as Me" để đọc sheet riêng tư.</p>
+      <p class="mt-2">Ứng dụng được thiết kế với giao diện hiện đại và thân thiện</p>
+    </footer>
+  </div>
+
+  <script>
+    // Hiển thị/ẩn thanh tiến trình khi có câu hỏi
+    function toggleProgressBar(show) {
+      const progressContainer = document.getElementById('progress-container');
+      if (show) {
+        progressContainer.classList.remove('hidden');
+      } else {
+        progressContainer.classList.add('hidden');
+      }
+    }
+
+    // Cập nhật hàm generateRandomSet để hiển thị thanh tiến trình
+    const originalGenerateRandomSet = generateRandomSet;
+    generateRandomSet = function() {
+      originalGenerateRandomSet();
+      toggleProgressBar(true);
+    };
+
+    // Cập nhật hàm loadData để ẩn thanh tiến trình khi chưa có đề
+    const originalLoadData = loadData;
+    loadData = function() {
+      toggleProgressBar(false);
+      originalLoadData();
+    };
+    
+    // Xử lý cuộn trang để ẩn/hiện nút chấm điểm cố định
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', function() {
+      const gradingSection = document.getElementById('grading-section');
+      if (!gradingSection || gradingSection.classList.contains('hidden')) return;
+      
+      const st = window.pageYOffset || document.documentElement.scrollTop;
+      if (st > lastScrollTop) {
+        // Cuộn xuống
+        gradingSection.style.transform = 'translateY(0)';
+      } else {
+        // Cuộn lên
+        gradingSection.style.transform = 'translateY(0)';
+      }
+      lastScrollTop = st <= 0 ? 0 : st;
+    }, false);
+  </script>
+</body>
+</html>
