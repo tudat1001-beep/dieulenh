@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hệ thống Trắc nghiệm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            },
+            secondary: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .menu-card {
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+    }
+    
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 640px) {
+      .mobile-padding {
+        padding: 1rem;
+      }
+      
+      .mobile-flex-col {
+        flex-direction: column;
+      }
+      
+      .mobile-text-center {
+        text-align: center;
+      }
+      
+      .mobile-full-width {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen gradient-bg">
+  <div class="max-w-4xl mx-auto mobile-padding py-8">
+    <!-- Header Section -->
+    <header class="text-center mb-12 fade-in">
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 inline-block mb-6">
+        <i class="fas fa-graduation-cap text-white text-5xl mb-4"></i>
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Hệ thống Trắc nghiệm</h1>
+        <p class="text-white/80 text-lg">Ôn luyện và kiểm tra kiến thức</p>
+      </div>
+    </header>
+
+    <!-- Main Menu Section -->
+    <main class="fade-in" style="animation-delay: 0.3s;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Ôn tập Card -->
+        <div class="menu-card bg-white rounded-2xl shadow-lg p-6 pulse-animation">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-secondary-500 rounded-xl flex items-center justify-center">
+              <i class="fas fa-book-open text-white text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-gray-800">Ôn tập 114 câu hỏi</h2>
+              <p class="text-gray-600">Chia thành 5 phần</p>
+            </div>
+          </div>
+          <p class="text-gray-700 mb-6">Học và ôn luyện từng câu hỏi với phản hồi tức thì. Chọn đáp án và xem kết quả ngay lập tức.</p>
+          <ul class="text-sm text-gray-600 mb-6 space-y-2">
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-secondary-500"></i>
+              <span>Chia 114 câu thành 5 phần dễ học</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-secondary-500"></i>
+              <span>Kiểm tra đáp án ngay khi chọn</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-secondary-500"></i>
+              <span>Học theo tốc độ của riêng bạn</span>
+            </li>
+          </ul>
+          <a href="ontap.html" class="w-full bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all">
+            <i class="fas fa-play-circle"></i>
+            Bắt đầu ôn tập
+          </a>
+        </div>
+
+        <!-- Đề thi Card -->
+        <div class="menu-card bg-white rounded-2xl shadow-lg p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center">
+              <i class="fas fa-clipboard-list text-white text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-gray-800">Thi thử 20 câu</h2>
+              <p class="text-gray-600">Ngẫu nhiên & chấm điểm</p>
+            </div>
+          </div>
+          <p class="text-gray-700 mb-6">Làm bài thi thử với 20 câu hỏi ngẫu nhiên. Kiểm tra kiến thức và nhận kết quả sau khi hoàn thành.</p>
+          <ul class="text-sm text-gray-600 mb-6 space-y-2">
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-primary-500"></i>
+              <span>20 câu hỏi ngẫu nhiên từ ngân hàng đề</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-primary-500"></i>
+              <span>Chấm điểm tự động sau khi hoàn thành</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fas fa-check text-primary-500"></i>
+              <span>Xem đáp án và các câu sai</span>
+            </li>
+          </ul>
+          <a href="dethi.html" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all">
+            <i class="fas fa-flag-checkered"></i>
+            Bắt đầu thi thử
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8">
+        <h3 class="text-white text-xl font-bold mb-4 text-center">Thống kê hệ thống</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white/20 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-white">114</div>
+            <div class="text-white/80">Câu hỏi</div>
+          </div>
+          <div class="bg-white/20 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-white">2</div>
+            <div class="text-white/80">Chế độ học</div>
+          </div>
+          <div class="bg-white/20 rounded-xl p-4 text-center">
+            <div class="text-3xl font-bold text-white">5</div>
+            <div class="text-white/80">Phần ôn tập</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions Section -->
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Hướng dẫn sử dụng</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-book-open text-secondary-500"></i>
+              Chế độ ôn tập
+            </h4>
+            <ol class="text-sm text-gray-600 space-y-2">
+              <li>1. Chọn "Bắt đầu ôn tập"</li>
+              <li>2. Chọn phần ôn tập (1-5)</li>
+              <li>3. Chọn đáp án cho từng câu hỏi</li>
+              <li>4. Xem kết quả ngay lập tức</li>
+            </ol>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-clipboard-list text-primary-500"></i>
+              Chế độ thi thử
+            </h4>
+            <ol class="text-sm text-gray-600 space-y-2">
+              <li>1. Chọn "Bắt đầu thi thử"</li>
+              <li>2. Làm bài 20 câu ngẫu nhiên</li>
+              <li>3. Bấm "Chấm điểm" khi hoàn thành</li>
+              <li>4. Xem kết quả và đáp án</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center mt-8">
+      <p class="text-white/70 text-sm">Hệ thống trắc nghiệm &copy; 2023 - Được thiết kế để hỗ trợ học tập hiệu quả</p>
+    </footer>
+  </div>
+
+  <script>
+    // Thêm hiệu ứng khi trang tải xong
+    document.addEventListener('DOMContentLoaded', function() {
+      // Thêm hiệu ứng cho các card
+      const cards = document.querySelectorAll('.menu-card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${0.5 + index * 0.2}s`;
+      });
+      
+      // Kiểm tra và thông báo nếu không tìm thấy trang
+      document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function(e) {
+          // Trong môi trường thực tế, bạn có thể kiểm tra xem trang tồn tại không
+          // Ở đây chỉ là ví dụ
+          console.log(`Đang chuyển hướng đến: ${this.getAttribute('href')}`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
